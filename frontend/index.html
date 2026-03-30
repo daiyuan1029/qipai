@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>麻将AI陪练</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <h1>🀄 麻将AI陪练</h1>
+  <span id="loading">AI 思考中…</span>
+  <button id="btn-new-game">新游戏</button>
+</header>
+
+<!-- ── Welcome Screen ── -->
+<div id="welcome">
+  <h2>欢迎来到麻将AI陪练</h2>
+  <p>你是东家（玩家0），与三位AI对手对局。</p>
+  <div class="rules">
+    <strong>操作说明：</strong><br/>
+    • 轮到你时，高亮的手牌可点击出牌<br/>
+    • 别人打出牌时，如可 <b>碰/吃/杠</b> 会出现操作按钮<br/>
+    • 点击「<b>不要</b>」跳过当前机会<br/>
+    • 胡牌条件：14张牌可组成4组面子+1对将<br/><br/>
+    <strong>牌型说明：</strong><br/>
+    • 竹（绿）· 万（红）· 筒（蓝）各1-9<br/>
+    • 三元牌：中 發 白 &nbsp;&nbsp; 风牌：东 南 西 北
+  </div>
+  <br/>
+  <button id="btn-start-welcome" style="padding:12px 36px; font-size:1.1rem; background:#d4af37; color:#1a1a1a; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+    开始游戏
+  </button>
+</div>
+
+<!-- ── Game Area ── -->
+<div id="game-area">
+
+  <!-- 对手：上方（玩家2，对家） -->
+  <div id="opp-top-wrap">
+    <div class="opponent-panel">
+      <span class="opp-name">玩家2（对家）</span>
+      <div id="opp-top"></div>
+    </div>
+  </div>
+
+  <!-- 中间行：左·弃牌堆·右 -->
+  <div id="table-row">
+    <!-- 左（玩家3） -->
+    <div class="opponent-panel">
+      <div class="opp-name">玩家3（下家）</div>
+      <div id="opp-left"></div>
+    </div>
+
+    <!-- 弃牌堆 -->
+    <div id="discard-area"></div>
+
+    <!-- 右（玩家1） -->
+    <div class="opponent-panel">
+      <div class="opp-name">玩家1（上家）</div>
+      <div id="opp-right"></div>
+    </div>
+  </div>
+
+  <!-- 状态提示 -->
+  <div id="status-bar">点击「新游戏」开始</div>
+
+  <!-- 操作按钮（碰/吃/杠/不要） -->
+  <div id="action-bar"></div>
+
+  <!-- 人类玩家手牌 -->
+  <div id="player-area">
+    <h3>你的手牌（玩家0 · 东家）</h3>
+    <div id="player-hand"></div>
+  </div>
+
+  <!-- 操作日志 -->
+  <div id="log-panel">
+    <h4>操作记录</h4>
+    <ul id="log-list"></ul>
+  </div>
+
+</div>
+
+<!-- ── Game Over Overlay ── -->
+<div id="game-over">
+  <div id="game-over-box">
+    <h2 id="game-over-title">游戏结束</h2>
+    <p id="game-over-msg"></p>
+    <button id="btn-play-again">再来一局</button>
+  </div>
+</div>
+
+<script src="/static/js/game.js"></script>
+</body>
+</html>
