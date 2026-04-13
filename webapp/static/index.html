@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RLCard Web Tester — 棋牌 AI 测试平台</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <!-- ── Header ── -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">♠ RLCard Web Tester</div>
+      <div class="subtitle">棋牌 AI 强化学习测试平台</div>
+    </div>
+  </header>
+
+  <!-- ── Main ── -->
+  <main id="app">
+
+    <!-- Game Selection Screen -->
+    <section id="screen-select" class="screen active">
+      <h2>选择游戏</h2>
+      <div class="game-cards">
+        <div class="game-card" data-game="blackjack">
+          <div class="game-icon">🃏</div>
+          <h3>Blackjack</h3>
+          <p class="game-desc">21点 · 与庄家对决，不超过21点且比庄家大即可获胜</p>
+          <div class="game-meta"><span>1 位玩家</span><span>vs 庄家</span></div>
+          <button class="btn-play" onclick="startGame('blackjack')">开始游戏</button>
+        </div>
+        <div class="game-card" data-game="leduc-holdem">
+          <div class="game-icon">🎴</div>
+          <h3>Leduc Hold'em</h3>
+          <p class="game-desc">简化扑克 · 6张牌的德州扑克变体，适合快速对局</p>
+          <div class="game-meta"><span>2 位玩家</span><span>vs AI</span></div>
+          <button class="btn-play" onclick="startGame('leduc-holdem')">开始游戏</button>
+        </div>
+        <div class="game-card" data-game="limit-holdem">
+          <div class="game-icon">♠</div>
+          <h3>Limit Texas Hold'em</h3>
+          <p class="game-desc">限注德州扑克 · 经典德州扑克，固定筹码加注</p>
+          <div class="game-meta"><span>2 位玩家</span><span>vs AI</span></div>
+          <button class="btn-play" onclick="startGame('limit-holdem')">开始游戏</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Game Screen -->
+    <section id="screen-game" class="screen">
+      <div class="game-layout">
+
+        <!-- Left: Game Table -->
+        <div class="table-area">
+          <div class="table-felt">
+
+            <!-- Opponent / Dealer Area -->
+            <div id="area-opponent" class="player-area opponent-area">
+              <div class="area-label" id="opponent-label">庄家</div>
+              <div class="hand" id="opponent-hand"></div>
+              <div class="chips-info" id="opponent-chips"></div>
+            </div>
+
+            <!-- Center: Public Cards & Pot -->
+            <div id="area-center" class="center-area" style="display:none">
+              <div class="center-label">公共牌</div>
+              <div class="hand" id="public-cards"></div>
+              <div class="pot-info" id="pot-info"></div>
+            </div>
+
+            <!-- Player Area -->
+            <div id="area-player" class="player-area player-area-bottom">
+              <div class="area-label">你的手牌</div>
+              <div class="hand" id="player-hand"></div>
+              <div class="chips-info" id="player-chips"></div>
+            </div>
+
+            <!-- Scores (Blackjack only) -->
+            <div id="bj-scores" class="bj-scores" style="display:none">
+              <div>你的点数: <strong id="player-score">0</strong></div>
+              <div>庄家点数: <strong id="dealer-score">0</strong></div>
+            </div>
+
+            <!-- Result Banner -->
+            <div id="result-banner" class="result-banner" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- Right: Controls & Log -->
+        <div class="side-panel">
+          <div class="panel-header">
+            <div class="game-title" id="game-title-panel">游戏</div>
+            <button class="btn-back" onclick="goToSelect()">← 返回</button>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-area">
+            <div class="action-label" id="action-label">等待中...</div>
+            <div id="action-buttons" class="action-buttons"></div>
+          </div>
+
+          <!-- New Game Button -->
+          <div id="new-game-area" class="new-game-area" style="display:none">
+            <button class="btn-new-game" id="btn-new-game">再来一局</button>
+          </div>
+
+          <!-- Game Log -->
+          <div class="log-area">
+            <div class="log-title">游戏记录</div>
+            <div id="game-log" class="game-log"></div>
+          </div>
+
+          <!-- Stats -->
+          <div class="stats-area">
+            <div class="stat"><span>胜局</span><strong id="stat-wins">0</strong></div>
+            <div class="stat"><span>负局</span><strong id="stat-losses">0</strong></div>
+            <div class="stat"><span>平局</span><strong id="stat-ties">0</strong></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Loading Overlay -->
+  <div id="loading" class="loading-overlay" style="display:none">
+    <div class="spinner"></div>
+    <div class="loading-text">AI 思考中...</div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
