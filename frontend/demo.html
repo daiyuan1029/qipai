@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>麻将AI陪练 · 演示版</title>
+<style>
+:root{
+  --green:#1a6b3a;--dark:#0f4423;--gold:#d4af37;
+  --tile:#fefce8;--border:#c8a94e;--shadow:rgba(0,0,0,.4);
+  --bamboo:#1a5e1a;--chars:#b91c1c;--dots:#1d4ed8;--special:#7c3aed;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--dark);font-family:"Microsoft YaHei","PingFang SC",sans-serif;
+  color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+
+/* header */
+header{width:100%;padding:10px 20px;background:rgba(0,0,0,.35);
+  display:flex;align-items:center;gap:12px;border-bottom:2px solid var(--gold)}
+header h1{font-size:1.3rem;color:var(--gold)}
+#btn-new{margin-left:auto;padding:7px 20px;background:var(--gold);color:#1a1a1a;
+  border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:.9rem}
+#btn-new:hover{opacity:.85}
+
+/* layout */
+#wrap{width:100%;max-width:1080px;padding:14px;display:flex;flex-direction:column;gap:10px}
+
+/* opponent panels */
+.opp{background:rgba(0,0,0,.25);border:1px solid rgba(212,175,55,.3);
+  border-radius:10px;padding:10px;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.opp-name{font-size:.78rem;color:var(--gold);font-weight:bold;white-space:nowrap}
+.opp-tiles{display:flex;flex-wrap:wrap;gap:3px}
+.tile-back{width:18px;height:26px;background:linear-gradient(135deg,#1a5276,#154360);
+  border:1px solid rgba(255,255,255,.2);border-radius:3px}
+#top-row{display:grid;grid-template-columns:155px 1fr 155px;gap:10px}
+
+/* discard area */
+#discard{background:var(--green);border:2px solid rgba(212,175,55,.4);border-radius:12px;
+  padding:10px;min-height:160px;display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start}
+
+/* tile */
+.tile{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+  width:36px;height:48px;background:var(--tile);border:1.5px solid var(--border);
+  border-radius:5px;box-shadow:2px 2px 4px var(--shadow);font-weight:bold;cursor:default;
+  user-select:none;transition:transform .15s,box-shadow .15s;position:relative}
+.tile .si{font-size:.42rem;opacity:.6;line-height:1}
+.tile .tn{font-size:.9rem;line-height:1}
+.tile.sm{width:24px;height:34px}.tile.sm .tn{font-size:.7rem}.tile.sm .si{font-size:.35rem}
+.tile.bamboo{color:var(--bamboo)}.tile.characters{color:var(--chars)}
+.tile.dots{color:var(--dots)}.tile.special{color:var(--special)}
+.tile.playable{cursor:pointer;border-color:#f59e0b;
+  box-shadow:2px 2px 6px var(--shadow),0 0 8px rgba(245,158,11,.5)}
+.tile.playable:hover{transform:translateY(-9px);
+  box-shadow:2px 10px 14px var(--shadow),0 0 14px rgba(245,158,11,.8);z-index:10}
+
+/* player area */
+#player-area{background:rgba(0,0,0,.3);border:2px solid var(--gold);
+  border-radius:12px;padding:12px 16px}
+#player-area h3{color:var(--gold);font-size:.88rem;margin-bottom:8px}
+#hand{display:flex;flex-wrap:wrap;gap:5px;min-height:56px;align-items:flex-end}
+
+/* action buttons */
+#actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;min-height:40px}
+.act{padding:7px 22px;font-size:1rem;font-weight:bold;border:none;border-radius:8px;
+  cursor:pointer;transition:opacity .2s,transform .1s}
+.act:hover{opacity:.85;transform:scale(1.04)}
+.pong{background:#e67e22;color:#fff}.chow{background:#27ae60;color:#fff}
+.gong{background:#8e44ad;color:#fff}.stand{background:#718096;color:#fff}
+
+/* status */
+#status{font-size:.95rem;color:#fde68a;text-align:center;padding:3px 0;min-height:1.4em}
+#status.ai{color:#94a3b8;font-style:italic}
+
+/* log */
+#log-wrap{background:rgba(0,0,0,.3);border:1px solid rgba(212,175,55,.3);
+  border-radius:8px;padding:10px 14px}
+#log-wrap h4{color:var(--gold);font-size:.78rem;margin-bottom:5px}
+#log{list-style:none;max-height:100px;overflow-y:auto;
+  display:flex;flex-direction:column-reverse;gap:2px}
+#log li{font-size:.78rem;color:#cbd5e1;border-bottom:1px solid rgba(255,255,255,.05);padding:1px 0}
+#log li:first-child{color:#fde68a;font-weight:bold}
+
+/* meld */
+.meld{display:inline-flex;gap:2px;padding:2px;
+  background:rgba(255,255,255,.07);border-radius:4px;margin:1px}
+
+/* game over */
+#overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);
+  align-items:center;justify-content:center;z-index:100}
+#overlay.on{display:flex}
+#box{background:#1a2a1a;border:3px solid var(--gold);border-radius:16px;
+  padding:38px 56px;text-align:center}
+#box h2{font-size:1.9rem;color:var(--gold);margin-bottom:10px}
+#box p{color:#ccc;margin-bottom:20px;font-size:1.05rem}
+#btn-again{padding:10px 32px;background:var(--gold);color:#1a1a1a;
+  border:none;border-radius:8px;font-size:1rem;font-weight:bold;cursor:pointer}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🀄 麻将AI陪练 <span style="font-size:.75rem;color:#94a3b8;font-weight:normal">· 单机演示版</span></h1>
+  <button id="btn-new" onclick="newGame()">新游戏</button>
+</header>
+
+<div id="wrap">
+  <!-- 对家（玩家2） -->
+  <div id="opp2-wrap">
+    <div class="opp" style="justify-content:center">
+      <span class="opp-name">玩家2（对家）</span>
+      <div id="opp2-tiles" class="opp-tiles"></div>
+      <div id="opp2-melds"></div>
+    </div>
+  </div>
+
+  <!-- 中间行 -->
+  <div id="top-row">
+    <div class="opp" style="flex-direction:column;align-items:flex-start">
+      <span class="opp-name">玩家3（下家）</span>
+      <div id="opp3-tiles" class="opp-tiles"></div>
+      <div id="opp3-melds"></div>
+    </div>
+    <div id="discard"></div>
+    <div class="opp" style="flex-direction:column;align-items:flex-start">
+      <span class="opp-name">玩家1（上家）</span>
+      <div id="opp1-tiles" class="opp-tiles"></div>
+      <div id="opp1-melds"></div>
+    </div>
+  </div>
+
+  <div id="status">点击「新游戏」开始</div>
+  <div id="actions"></div>
+
+  <div id="player-area">
+    <h3>你的手牌（玩家0 · 东家）</h3>
+    <div id="hand"></div>
+  </div>
+
+  <div id="log-wrap">
+    <h4>操作记录</h4>
+    <ul id="log"></ul>
+  </div>
+</div>
+
+<!-- 游戏结束弹窗 -->
+<div id="overlay">
+  <div id="box">
+    <h2 id="ov-title"></h2>
+    <p id="ov-msg"></p>
+    <button id="btn-again" onclick="newGame()">再来一局</button>
+  </div>
+</div>
+
+<script>
+// ─── 牌定义 ──────────────────────────────────────
+const SUITS = {
+  bamboo:['1竹','2竹','3竹','4竹','5竹','6竹','7竹','8竹','9竹'],
+  characters:['1万','2万','3万','4万','5万','6万','7万','8万','9万'],
+  dots:['1筒','2筒','3筒','4筒','5筒','6筒','7筒','8筒','9筒'],
+};
+const HONORS = ['中','發','白','东','南','西','北'];
+const SUIT_OF={};
+const ALL_TILES=[];
+['bamboo','characters','dots'].forEach(s=>{
+  for(let i=1;i<=9;i++){const k=`${s}-${i}`;ALL_TILES.push(k);SUIT_OF[k]=s;}
+});
+['dragons-red','dragons-green','dragons-white','winds-east','winds-south','winds-west','winds-north']
+  .forEach(k=>{ALL_TILES.push(k);SUIT_OF[k]='special';});
+const DECK=[...ALL_TILES,...ALL_TILES,...ALL_TILES,...ALL_TILES];
+
+function tileCN(k){
+  const m={
+    'bamboo':'竹','characters':'万','dots':'筒',
+    'dragons-red':'中','dragons-green':'發','dragons-white':'白',
+    'winds-east':'东','winds-south':'南','winds-west':'西','winds-north':'北'
+  };
+  if(k.startsWith('bamboo-')||k.startsWith('characters-')||k.startsWith('dots-')){
+    const[s,n]=k.split('-');return n+(m[s]||s);
+  }
+  return m[k]||k;
+}
+function suitCls(k){return SUIT_OF[k]||'special';}
+function makeTile(k,small=false,playable=false){
+  const cn=tileCN(k);const cl=suitCls(k);
+  const suit=cl==='bamboo'?'竹':cl==='characters'?'万':cl==='dots'?'筒':'';
+  const num=cn.replace(suit,'');
+  const d=document.createElement('div');
+  d.className=`tile ${cl}${small?' sm':''}${playable?' playable':''}`;
+  d.dataset.key=k;
+  d.innerHTML=`<span class="si">${suit}</span><span class="tn">${num||cn}</span>`;
+  return d;
+}
+
+// ─── 游戏状态 ─────────────────────────────────────
+let G={};
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.random()*i+1|0;[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function deal(deck,n){return deck.splice(0,n);}
+
+function newGame(){
+  document.getElementById('overlay').classList.remove('on');
+  const deck=shuffle([...DECK]);
+  G={
+    deck,
+    players:[
+      {hand:deal(deck,13),melds:[],isHuman:true},
+      {hand:deal(deck,13),melds:[],isHuman:false},
+      {hand:deal(deck,13),melds:[],isHuman:false},
+      {hand:deal(deck,13),melds:[],isHuman:false},
+    ],
+    discard:[],
+    current:0,
+    phase:'draw',   // draw | discard | react
+    reactPlayer:-1,
+    reactOptions:[],
+    lastDiscard:null,
+    log:['游戏开始！你是玩家0（东家）。'],
+    done:false,
+  };
+  drawCard(0);
+}
+
+function drawCard(pid){
+  if(G.deck.length===0){endGame(-1);return;}
+  const card=G.deck.shift();
+  G.players[pid].hand.push(card);
+  G.current=pid;
+  G.phase='discard';
+  if(pid===0){
+    addLog('你摸了一张牌，请出牌');
+    render();
+  } else {
+    setTimeout(()=>aiDiscard(pid),600);
+  }
+}
+
+function aiDiscard(pid){
+  const p=G.players[pid];
+  // AI随机出一张牌
+  const idx=Math.floor(Math.random()*p.hand.length);
+  const card=p.hand.splice(idx,1)[0];
+  G.discard.push(card);
+  G.lastDiscard={card,from:pid};
+  addLog(`玩家${pid} 打出: ${tileCN(card)}`);
+  // 检查玩家0是否可以碰/杠
+  checkReact(pid);
+}
+
+function humanDiscard(card){
+  if(G.phase!=='discard'||G.current!==0)return;
+  const p=G.players[0];
+  const idx=p.hand.indexOf(card);
+  if(idx===-1)return;
+  p.hand.splice(idx,1);
+  G.discard.push(card);
+  G.lastDiscard={card,from:0};
+  addLog(`你 打出: ${tileCN(card)}`);
+  // AI反应
+  checkReactAI();
+}
+
+function checkReact(fromPid){
+  // 检查玩家0是否可以碰或杠
+  if(fromPid===0){checkReactAI();return;}
+  const card=G.lastDiscard.card;
+  const hand=G.players[0].hand;
+  const cnt=hand.filter(c=>c===card).length;
+  const opts=[];
+  if(cnt>=3)opts.push('gong');
+  if(cnt>=2)opts.push('pong');
+  opts.push('stand');
+  if(opts.length>1){
+    G.phase='react';G.reactPlayer=0;G.reactOptions=opts;
+    addLog(`玩家${fromPid}打出${tileCN(card)}，你可以操作`);
+    render();
+  } else {
+    nextAfterDiscard(fromPid);
+  }
+}
+
+function checkReactAI(){
+  // AI之间也可以碰，简化处理：随机决定
+  const card=G.lastDiscard.card;
+  const from=G.lastDiscard.from;
+  for(let pid=1;pid<=3;pid++){
+    if(pid===from)continue;
+    const cnt=G.players[pid].hand.filter(c=>c===card).length;
+    if(cnt>=2&&Math.random()<0.3){
+      // AI碰牌
+      const p=G.players[pid];
+      const removed=[];
+      let n=0;
+      p.hand=p.hand.filter(c=>{if(c===card&&n<2){n++;removed.push(c);return false;}return true;});
+      removed.push(card);
+      p.melds.push(removed);
+      addLog(`玩家${pid} 碰了: ${tileCN(card)}`);
+      G.current=pid;G.phase='discard';
+      setTimeout(()=>aiDiscard(pid),600);
+      render();return;
+    }
+  }
+  nextAfterDiscard(G.lastDiscard.from);
+}
+
+function nextAfterDiscard(fromPid){
+  const next=(fromPid+1)%4;
+  setTimeout(()=>drawCard(next),400);
+}
+
+function humanReact(act){
+  if(G.phase!=='react'||G.reactPlayer!==0)return;
+  const card=G.lastDiscard.card;
+  const from=G.lastDiscard.from;
+  if(act==='stand'){
+    addLog('你 选择: 不要');
+    G.phase='idle';
+    nextAfterDiscard(from);
+  } else if(act==='pong'){
+    const p=G.players[0];
+    let n=0;
+    p.hand=p.hand.filter(c=>{if(c===card&&n<2){n++;return false;}return true;});
+    p.melds.push([card,card,card]);
+    addLog(`你 碰了: ${tileCN(card)}`);
+    G.current=0;G.phase='discard';
+  } else if(act==='gong'){
+    const p=G.players[0];
+    let n=0;
+    p.hand=p.hand.filter(c=>{if(c===card&&n<3){n++;return false;}return true;});
+    p.melds.push([card,card,card,card]);
+    addLog(`你 杠了: ${tileCN(card)}`);
+    if(G.deck.length>0){p.hand.push(G.deck.shift());}
+    G.current=0;G.phase='discard';
+  }
+  render();
+}
+
+function endGame(winner){
+  G.done=true;
+  const t=document.getElementById('ov-title');
+  const m=document.getElementById('ov-msg');
+  if(winner===0){t.textContent='🎉 你赢了！';m.textContent='恭喜，胡牌！';}
+  else if(winner>0){t.textContent=`😔 玩家${winner}赢了`;m.textContent='再接再厉！';}
+  else{t.textContent='🤝 流局';m.textContent='牌墙摸完，平局。';}
+  document.getElementById('overlay').classList.add('on');
+  render();
+}
+
+function addLog(msg){
+  G.log.unshift(msg);if(G.log.length>20)G.log.pop();
+}
+
+// ─── 渲染 ─────────────────────────────────────────
+function renderBacks(container,count){
+  container.innerHTML='';
+  for(let i=0;i<count;i++){const b=document.createElement('div');b.className='tile-back';container.appendChild(b);}
+}
+function renderMelds(container,melds){
+  container.innerHTML='';
+  melds.forEach(m=>{
+    const d=document.createElement('div');d.className='meld';
+    m.forEach(k=>d.appendChild(makeTile(k,true)));
+    container.appendChild(d);
+  });
+}
+
+function render(){
+  if(!G.players)return;
+  // 对手
+  [1,2,3].forEach(i=>{
+    renderBacks(document.getElementById(`opp${i}-tiles`),G.players[i].hand.length);
+    renderMelds(document.getElementById(`opp${i}-melds`),G.players[i].melds);
+  });
+  // 弃牌
+  const disc=document.getElementById('discard');
+  disc.innerHTML='';
+  G.discard.forEach(k=>disc.appendChild(makeTile(k,true)));
+  // 日志
+  const ul=document.getElementById('log');
+  ul.innerHTML='';
+  G.log.forEach(msg=>{const li=document.createElement('li');li.textContent=msg;ul.appendChild(li);});
+  // 手牌 + 操作按钮
+  const handEl=document.getElementById('hand');
+  const actEl=document.getElementById('actions');
+  const statusEl=document.getElementById('status');
+  handEl.innerHTML='';actEl.innerHTML='';
+
+  const isMyTurn=G.current===0&&G.phase==='discard';
+  const isReact=G.phase==='react'&&G.reactPlayer===0;
+
+  // 排序手牌
+  const sorted=[...G.players[0].hand].sort();
+  sorted.forEach(k=>{
+    const t=makeTile(k,false,isMyTurn);
+    if(isMyTurn)t.onclick=()=>{humanDiscard(k);};
+    handEl.appendChild(t);
+  });
+  // 碰杠选项
+  if(isReact){
+    const card=G.lastDiscard.card;
+    const from=G.lastDiscard.from;
+    statusEl.textContent=`玩家${from}打出 ${tileCN(card)}，请选择：`;
+    statusEl.className='';
+    const labels={pong:'碰',chow:'吃',gong:'杠',stand:'不要'};
+    const colors={pong:'pong',chow:'chow',gong:'gong',stand:'stand'};
+    G.reactOptions.forEach(act=>{
+      const b=document.createElement('button');
+      b.className=`act ${colors[act]}`;
+      b.textContent=labels[act];
+      b.onclick=()=>humanReact(act);
+      actEl.appendChild(b);
+    });
+  } else if(isMyTurn){
+    statusEl.textContent='轮到你了 — 点击手牌出牌';
+    statusEl.className='';
+  } else if(G.done){
+    statusEl.textContent='游戏结束';statusEl.className='';
+  } else {
+    statusEl.textContent=`玩家${G.current} 思考中…`;
+    statusEl.className='ai';
+  }
+  // 牌墙剩余
+  document.querySelector('#log-wrap h4').textContent=`操作记录（牌墙剩余 ${G.deck?G.deck.length:0} 张）`;
+}
+</script>
+</body>
+</html>

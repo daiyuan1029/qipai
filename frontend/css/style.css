@@ -1,0 +1,431 @@
+/* =========================================
+   麻将AI陪练 - 样式表
+   ========================================= */
+
+:root {
+  --green-felt: #1a6b3a;
+  --green-dark: #0f4423;
+  --gold: #d4af37;
+  --tile-bg: #fefce8;
+  --tile-border: #c8a94e;
+  --tile-shadow: rgba(0, 0, 0, 0.4);
+  --bamboo-color: #2d6a1e;
+  --chars-color: #b22222;
+  --dots-color: #1a3a8f;
+  --dragon-red: #cc0000;
+  --dragon-green: #1a7a1a;
+  --dragon-white: #555;
+  --wind-color: #444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--green-dark);
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Header ── */
+header {
+  width: 100%;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 2px solid var(--gold);
+}
+
+header h1 {
+  font-size: 1.4rem;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+}
+
+#btn-new-game {
+  margin-left: auto;
+  padding: 7px 20px;
+  background: var(--gold);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+#btn-new-game:hover {
+  opacity: 0.85;
+}
+
+/* ── Main layout ── */
+#game-area {
+  display: none; /* hidden until game starts */
+  width: 100%;
+  max-width: 1100px;
+  padding: 16px;
+  gap: 12px;
+  flex-direction: column;
+  align-items: center;
+}
+
+#game-area.active {
+  display: flex;
+}
+
+/* ── Welcome screen ── */
+#welcome {
+  margin-top: 80px;
+  text-align: center;
+}
+
+#welcome h2 {
+  font-size: 2rem;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+
+#welcome p {
+  color: #ccc;
+  margin-bottom: 24px;
+  font-size: 1.05rem;
+}
+
+#welcome .rules {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 16px 24px;
+  max-width: 520px;
+  margin: 0 auto;
+  text-align: left;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: #ddd;
+}
+
+/* ── Table (top 3 players + discard center) ── */
+#table-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 160px;
+  gap: 10px;
+  width: 100%;
+}
+
+/* ── Opponent panels ── */
+.opponent-panel {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.opponent-panel .opp-name {
+  font-size: 0.82rem;
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.opponent-panel .opp-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.tile-back {
+  width: 20px;
+  height: 28px;
+  background: linear-gradient(135deg, #1a5276, #154360);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+}
+
+.opponent-panel .meld-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+/* Top opponent spans the full width */
+#opp-top-wrap {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+}
+
+#opp-top-wrap .opponent-panel {
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#opp-top-wrap .opp-tiles {
+  flex-direction: row;
+}
+
+/* ── Center discard area ── */
+#discard-area {
+  background: var(--green-felt);
+  border: 2px solid rgba(212, 175, 55, 0.4);
+  border-radius: 12px;
+  padding: 12px;
+  min-height: 180px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-content: flex-start;
+}
+
+/* ── Tile component ── */
+.tile {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 50px;
+  background: var(--tile-bg);
+  border: 1.5px solid var(--tile-border);
+  border-radius: 5px;
+  box-shadow: 2px 2px 4px var(--tile-shadow);
+  font-size: 0.78rem;
+  font-weight: bold;
+  cursor: default;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  user-select: none;
+}
+
+.tile.small {
+  width: 26px;
+  height: 36px;
+  font-size: 0.62rem;
+}
+
+.tile.bamboo { color: var(--bamboo-color); }
+.tile.characters { color: var(--chars-color); }
+.tile.dots { color: var(--dots-color); }
+.tile.dragon-red { color: var(--dragon-red); font-size: 1.05rem; }
+.tile.dragon-green { color: var(--dragon-green); font-size: 1.05rem; }
+.tile.dragon-white { color: var(--dragon-white); font-size: 1.05rem; }
+.tile.wind { color: var(--wind-color); font-size: 0.9rem; }
+
+/* Suit icon at top of tile */
+.tile .suit-icon {
+  font-size: 0.5rem;
+  opacity: 0.6;
+  line-height: 1;
+  margin-bottom: 1px;
+}
+
+.tile .tile-num {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.tile.small .tile-num {
+  font-size: 0.75rem;
+}
+
+/* Clickable / playable tile */
+.tile.playable {
+  cursor: pointer;
+  border-color: #f59e0b;
+  box-shadow: 2px 2px 6px var(--tile-shadow), 0 0 8px rgba(245, 158, 11, 0.5);
+}
+
+.tile.playable:hover {
+  transform: translateY(-8px);
+  box-shadow: 2px 10px 12px var(--tile-shadow), 0 0 12px rgba(245, 158, 11, 0.7);
+  z-index: 10;
+}
+
+.tile.selected {
+  transform: translateY(-8px);
+  border-color: #ef4444;
+}
+
+/* ── Human player area ── */
+#player-area {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+#player-area h3 {
+  color: var(--gold);
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+#player-hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-height: 58px;
+  align-items: flex-end;
+}
+
+/* ── Action buttons ── */
+#action-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  min-height: 42px;
+}
+
+.action-btn {
+  padding: 8px 22px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.action-btn:hover {
+  opacity: 0.85;
+  transform: scale(1.04);
+}
+
+.action-btn.pong { background: #e67e22; color: #fff; }
+.action-btn.chow { background: #27ae60; color: #fff; }
+.action-btn.gong { background: #8e44ad; color: #fff; }
+.action-btn.stand { background: #7f8c8d; color: #fff; }
+
+/* ── Status / turn indicator ── */
+#status-bar {
+  font-size: 1rem;
+  color: #fde68a;
+  text-align: center;
+  padding: 4px 0;
+  min-height: 1.4em;
+}
+
+#status-bar.ai-thinking {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* ── Log panel ── */
+#log-panel {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+#log-panel h4 {
+  color: var(--gold);
+  font-size: 0.82rem;
+  margin-bottom: 6px;
+}
+
+#log-list {
+  list-style: none;
+  max-height: 120px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+}
+
+#log-list li {
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  padding: 1px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+#log-list li:first-child {
+  color: #fde68a;
+  font-weight: bold;
+}
+
+/* ── Game over overlay ── */
+#game-over {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+#game-over.active {
+  display: flex;
+}
+
+#game-over-box {
+  background: #1a2a1a;
+  border: 3px solid var(--gold);
+  border-radius: 16px;
+  padding: 40px 60px;
+  text-align: center;
+}
+
+#game-over-box h2 {
+  font-size: 2rem;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+
+#game-over-box p {
+  font-size: 1.1rem;
+  color: #ccc;
+  margin-bottom: 20px;
+}
+
+#btn-play-again {
+  padding: 10px 32px;
+  background: var(--gold);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ── Players melds ── */
+.meld {
+  display: inline-flex;
+  gap: 2px;
+  margin: 2px;
+  padding: 2px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 4px;
+}
+
+/* ── Loading spinner ── */
+#loading {
+  display: none;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+#loading.active {
+  display: inline;
+}
